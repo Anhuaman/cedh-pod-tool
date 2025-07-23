@@ -1,80 +1,119 @@
-function generatePod() {
-  const input = document.getElementById("inputText").value.trim();
+// script.js
+
+const fetchCardImageUrl = async (commanderNames) => {
+  const query = commanderNames.map(name => `name:"${name}"`).join(" or ");
+  const response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(query)}`);
+  const data = await response.json();
+
+  if (!data.data || data.data.length === 0) return null;
+
+  // If partners, stitch the first two images side-by-side
+  if (commanderNames.length === 2) {
+    return commanderNames.map(name => {
+      const found = data.data.find(card => card.name === name);
+      return found?.image_uris?.normal || null;
+    });
+  }
+
+  const card = data.data.find(c => c.name === commanderNames[0]);
+  return card?.image_uris?.normal || null;
+};
+
+const getMulliganTip = (seat, archetype) => {
+  const seatAdvice = [
+    "You're going first – apply pressure and tempo.",
+    "You're going second – balance between speed and interaction.",
+    "You're going third – observe, then respond.",
+    "You're going last – prioritize strong interaction and card advantage."
+  ];
+
+  const tips = {
+    Turbo: "Mull aggressively for fast mana and a win-con.",
+    Midrange: "Look for interaction and value engines.",
+    Stax: "Prioritize lock pieces and early plays."
+  };
+
+  return `${seatAdvice[seat]} ${tips[archetype] || ""}`;
+};
+
+const parsePlayerData = (input) => {
+  return input.trim().split("\n").map((line) => {
+    const [name, rest] = line.split(" — ");
+    const parts = rest.split(/,\s*(?![^()]*\))/); // Handles commas not inside parentheses
+    const last = parts.pop();
+    const commander = parts.join(", ").trim();
+    const archetype = last.trim();
+    return { name: name.trim(), commander, archetype };
+  });
+};
+
+const renderCard = (player, seatIndex, imageUrls) => {
+  const container = document.createElement("div");
+  container.className = "player-card";
+
+  const imageContainer = document.createElement("div");
+  imageContainer.className = "image-container";
+
+  if (Array.isArray(imageUrls)) {
+    imageUrls.forEach(url => {
+      const img = document.createElement("img");
+      img.src = url || "https://via.placeholder.com/223x310?text=Unknown";
+      imageContainer.appendChild(img);
+    });
+  } else {
+    const img = document.createElement("img");
+    img.src = imageUrls || "https://via.placeholder.com/223x310?text=Unknown";
+    imageContainer.appendChild(img);
+  }
+
+  const title = document.createElement("h2");
+  title.innerText = `Seat ${seatIndex + 1}: ${player.name}`;
+
+  const commander = document.createElement("p");
+  commander.innerHTML = `<strong>Commander:</strong> ${player.commander}`;
+
+  const archetype = document.createElement("p");
+  archetype.innerHTML = `<strong>Archetype:</strong> ${player.archetype}`;
+
+  const advice = document.createElement("p");
+  advice.className = "tip";
+  advice.innerText = getMulliganTip(seatIndex, player.archetype);
+
+  container.appendChild(imageContainer);
+  container.appendChild(title);
+  container.appendChild(commander);
+  container.appendChild(archetype);
+  container.appendChild(advice);
+
+  return container;
+};
+
+const randomizeSeats = (players) => {
+  const shuffled = [...players];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+const handleRandomize = async () => {
+  const input = document.getElementById("playerInput").value;
+  const players = parsePlayerData(input);
+  const randomized = randomizeSeats(players);
   const output = document.getElementById("output");
   output.innerHTML = "";
 
-  const lines = input.split("\n").filter(line => line.includes("—"));
+  for (let i = 0; i < randomized.length; i++) {
+    const player = randomized[i];
+    const commanderNames = player.commander.includes(",")
+      ? player.commander.split(",").map(c => c.trim())
+      : [player.commander.trim()];
 
-  lines.forEach((line, i) => {
-    const parts = line.split("—").map(p => p.trim());
-    if (parts.length < 3) return;
+    const imageUrls = await fetchCardImageUrl(commanderNames);
+    const card = renderCard(player, i, imageUrls);
+    output.appendChild(card);
+  }
+};
 
-    const [name, commanderRaw, archetype] = parts;
-    const seat = i + 1;
-
-    const commanders = commanderRaw.split(",").map(c => c.trim());
-    const commanderName = commanders.join(", ");
-
-    const cardName = encodeURIComponent(commanderRaw.trim());
-    const imageUrl = `https://api.scryfall.com/cards/named?exact=${cardName}`;
-
-    const tip = getAdviceText(seat, archetype.trim());
-
-    const cardDiv = document.createElement("div");
-    cardDiv.className = "card";
-
-    const img = document.createElement("img");
-    img.alt = commanderName;
-
-    // Load first image from Scryfall
-    fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(commanders[0])}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.image_uris) {
-          img.src = data.image_uris.normal;
-        } else if (data.card_faces) {
-          img.src = data.card_faces[0].image_uris.normal;
-        } else {
-          img.src = "";
-        }
-      }).catch(() => {
-        img.src = "";
-      });
-
-    cardDiv.appendChild(img);
-
-    cardDiv.innerHTML += `
-      <h3>Seat ${seat}: ${name}</h3>
-      <p><strong>Commander:</strong> ${commanderName}</p>
-      <p><strong>Archetype:</strong> ${archetype}</p>
-      <p><em>${tip}</em></p>
-    `;
-
-    output.appendChild(cardDiv);
-  });
-}
-
-function getAdviceText(seat, archetype) {
-  const tips = {
-    Turbo: [
-      "You're going first – apply pressure and tempo. Mull aggressively for fast mana and a win-con.",
-      "You're going second – balance between speed and interaction. Mull aggressively for fast mana and a win-con.",
-      "You're going third – observe, then respond. Mull aggressively for fast mana and a win-con.",
-      "You're going last – prioritize strong interaction. Mull aggressively for fast mana and a win-con."
-    ],
-    Midrange: [
-      "You're going first – apply pressure and tempo. Look for interaction and value engines.",
-      "You're going second – balance between speed and interaction. Look for interaction and value engines.",
-      "You're going third – observe, then respond. Look for interaction and value engines.",
-      "You're going last – prioritize strong interaction and card advantage. Look for interaction and value engines."
-    ],
-    Stax: [
-      "You're going first – prioritize lock pieces and early plays.",
-      "You're going second – balance between speed and interaction. Prioritize lock pieces and early plays.",
-      "You're going third – observe, then respond. Prioritize lock pieces and early plays.",
-      "You're going last – prioritize strong interaction and card advantage. Prioritize lock pieces and early plays."
-    ]
-  };
-
-  return tips[archetype]?.[seat - 1] || "";
-}
+document.getElementById("randomizeButton").addEventListener("click", handleRandomize);
