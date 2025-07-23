@@ -93,13 +93,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const id = match[1];
     try {
       // Primary proxy with timeout
-      const proxyUrl = "https://crossorigin.me/";
+      const proxyUrl = "https://thingproxy.freeboard.io/fetch/";
       const targetUrl = `https://api2.moxfield.com/v2/decks/${id}`;
-      console.log("Fetching deck from:", `${proxyUrl}${targetUrl}`);
+      console.log("Fetching deck from:", `${proxyUrl}${encodeURIComponent(targetUrl)}`);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-      const res = await fetch(`${proxyUrl}${targetUrl}`, {
+      const res = await fetch(`${proxyUrl}${encodeURIComponent(targetUrl)}`, {
         signal: controller.signal,
         headers: {
           "Accept": "application/json",
@@ -108,8 +108,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       clearTimeout(timeoutId);
 
-      // Check Content-Type to ensure JSON response
+      // Check Content-Type and response
       const contentType = res.headers.get("content-type");
+      console.log("Response headers:", Object.fromEntries(res.headers.entries()));
       if (!contentType || !contentType.includes("application/json")) {
         const errorText = await res.text();
         console.error(`Invalid response: Content-Type=${contentType}`, errorText);
