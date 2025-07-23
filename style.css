@@ -127,3 +127,19 @@ button {
   border-radius: 8px;
   box-shadow: 0 0 8px rgba(255,255,255,0.2);
 }
+
+.btn-blue {
+  background-color: #007bff;
+  border: none;
+  padding: 10px 16px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.btn-blue:disabled {
+  background-color: #888;
+  cursor: not-allowed;
+}
+
