@@ -28,7 +28,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const [name, commanderRaw, archetype] = shuffled[i].split(" — ");
       if (!name || !commanderRaw || !archetype) continue;
 
-      const commanders = commanderRaw.split("and").map(c => c.trim());
+      // Handles "and" with or without commas and extra spacing
+      const commanders = commanderRaw
+        .split(/\s+and\s+/i)
+        .map(c => c.replace(/^,|,$/g, '').trim())
+        .filter(Boolean);
+
       const images = await Promise.all(commanders.map(fetchCardImage));
 
       const card = document.createElement("div");
