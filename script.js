@@ -12,10 +12,15 @@ const archetypeTips = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("randomizeButton").addEventListener("click", async () => {
-    const input = document.getElementById("playerInput").value.trim();
-    const lines = input.split("\n").filter(Boolean);
-    const output = document.getElementById("output");
+  const button = document.getElementById("randomizeButton");
+  const input = document.getElementById("playerInput");
+  const output = document.getElementById("output");
+  const container = document.getElementById("input-container");
+
+  container.appendChild(button); // Move button below the input
+
+  button.addEventListener("click", async () => {
+    const lines = input.value.trim().split("\n").filter(Boolean);
     output.innerHTML = "";
 
     if (lines.length !== 4) {
@@ -23,17 +28,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const shuffled = lines;
     for (let i = 0; i < 4; i++) {
-      const [name, commanderRaw, archetype] = shuffled[i].split(" — ");
+      const [name, commanderRaw, archetype] = lines[i].split(" — ");
       if (!name || !commanderRaw || !archetype) continue;
 
-      // Handles "and" with or without commas and extra spacing
-      const commanders = commanderRaw
-        .split(/\s+and\s+/i)
-        .map(c => c.replace(/^,|,$/g, '').trim())
-        .filter(Boolean);
-
+      const commanders = commanderRaw.split("and").map(c => c.trim());
       const images = await Promise.all(commanders.map(fetchCardImage));
 
       const card = document.createElement("div");
