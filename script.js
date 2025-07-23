@@ -11,13 +11,6 @@ const archetypeTips = {
   Stax: "Prioritize lock pieces and early plays."
 };
 
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   const button = document.getElementById("randomizeButton");
   const input = document.getElementById("playerInput");
@@ -33,7 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
   container.appendChild(buttonWrapper);
 
   button.addEventListener("click", async () => {
-    const lines = input.value.trim().split("\n").filter(Boolean);
+    const lines = input.value.trim().split("
+").filter(Boolean);
     output.innerHTML = "";
 
     if (lines.length !== 4) {
@@ -41,10 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    shuffle(lines); // ✅ Randomize player order here
+    const shuffled = lines.sort(() => Math.random() - 0.5);
 
     for (let i = 0; i < 4; i++) {
-      const [name, commanderRaw, archetype] = lines[i].split(" — ");
+      const [name, commanderRaw, archetype] = shuffled[i].split(" — ");
       if (!name || !commanderRaw || !archetype) continue;
 
       const commanders = commanderRaw.split("and").map(c => c.trim());
@@ -56,11 +50,76 @@ document.addEventListener("DOMContentLoaded", () => {
       const title = `<h2>Seat ${i + 1}: ${name}</h2>`;
       const cmd = `<p><strong>Commander:</strong> ${commanders.join(", ")}</p>`;
       const arch = `<p><strong>Archetype:</strong> ${archetype}</p>`;
-      const tip = `<p class="tip">You're going ${["first", "second", "third", "last"][i]} – ${archetypeTips[archetype] || ""}</p>`;
+      const tip = `<p class="tip">You're going ${["first","second","third","last"][i]} – ${archetypeTips[archetype] || ""}</p>`;
       const imageHTML = images.map(img => `<img src="${img}" alt="commander image" class="commander-img">`).join("");
 
       card.innerHTML = `${imageHTML}${title}${cmd}${arch}${tip}`;
       output.appendChild(card);
     }
+  });
+
+  // Moxfield + Mulligan Section
+  const moxfieldSection = document.createElement("div");
+  moxfieldSection.innerHTML = `
+    <h2>Moxfield Mulligan Tester</h2>
+    <input type="text" id="deckUrl" placeholder="Paste Moxfield deck URL here">
+    <button id="loadDeck">Load Deck</button>
+    <button id="mulligan" disabled>Mulligan</button>
+    <div id="hand"></div>
+  `;
+  document.body.appendChild(moxfieldSection);
+
+  let deck = [];
+  let currentHand = [];
+  let mulliganCount = 0;
+
+  document.getElementById("loadDeck").addEventListener("click", async () => {
+    const url = document.getElementById("deckUrl").value.trim();
+    const match = url.match(/moxfield\.com\/decks\/([a-zA-Z0-9]+)/);
+    if (!match) {
+      alert("Invalid Moxfield URL");
+      return;
+    }
+
+    const id = match[1];
+    const res = await fetch(`https://api2.moxfield.com/v2/decks/${id}`);
+    const data = await res.json();
+    const cards = data.mainboard;
+    deck = [];
+
+    for (const [scryId, info] of Object.entries(cards)) {
+      for (let i = 0; i < info.quantity; i++) {
+        deck.push(info.card.name);
+      }
+    }
+
+    mulliganCount = 0;
+    document.getElementById("mulligan").disabled = false;
+    drawHand();
+  });
+
+  function drawHand() {
+    const handSize = Math.max(0, 7 - mulliganCount);
+    const shuffled = deck.sort(() => Math.random() - 0.5);
+    currentHand = shuffled.slice(0, handSize);
+    displayHand();
+  }
+
+  function displayHand() {
+    const handDiv = document.getElementById("hand");
+    handDiv.innerHTML = "<h3>Starting hand:</h3>";
+    currentHand.forEach(async (cardName) => {
+      const imgUrl = await fetchCardImage(cardName);
+      const img = document.createElement("img");
+      img.src = imgUrl;
+      img.alt = cardName;
+      img.className = "commander-img";
+      handDiv.appendChild(img);
+    });
+  }
+
+  document.getElementById("mulligan").addEventListener("click", () => {
+    mulliganCount++;
+    drawHand();
   });
 });
