@@ -92,23 +92,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const id = match[1];
     try {
-      // Use a reliable CORS proxy
-      const proxyUrl = "https://corsproxy.io/?";
+      // Try primary CORS proxy
+      const proxyUrl = "https://proxy.cors.sh/";
       const targetUrl = `https://api2.moxfield.com/v2/decks/${id}`;
       console.log("Fetching deck from:", `${proxyUrl}${encodeURIComponent(targetUrl)}`);
-      let res = await fetch(`${proxyUrl}${encodeURIComponent(targetUrl)}`);
+      let res = await fetch(`${proxyUrl}${encodeURIComponent(targetUrl)}`, {
+        headers: {
+          // Add CORS proxy API key if required (optional, check proxy.cors.sh docs)
+          // 'x-cors-api-key': 'your-api-key-here'
+        }
+      });
 
       if (!res.ok) {
         const errorText = await res.text();
-        console.error(`Fetch failed with proxy: ${res.status} ${res.statusText}`, errorText);
-        // Fallback to direct fetch for debugging
-        console.log("Attempting direct fetch:", targetUrl);
-        res = await fetch(targetUrl);
+        console.error(`Fetch failed with proxy.cors.sh: ${res.status} ${res.statusText}`, errorText);
+        // Fallback to alternative proxy
+        const fallbackProxy = "https://corsproxy.io/?";
+        console.log("Trying fallback proxy:", `${fallbackProxy}${encodeURIComponent(targetUrl)}`);
+        res = await fetch(`${fallbackProxy}${encodeURIComponent(targetUrl)}`);
         if (!res.ok) {
-          const directErrorText = await res.text();
-          alert(`Failed to fetch deck: ${res.status} ${res.statusText}. Ensure the URL is correct and the deck is public. Details: ${directErrorText}`);
-          console.error(`Direct fetch failed: ${res.status} ${res.statusText}`, directErrorText);
-          return;
+          const fallbackErrorText = await res.text();
+          console.error(`Fetch failed with corsproxy.io: ${res.status} ${res.statusText}`, fallbackErrorText);
+          // Final fallback: direct fetch (may fail due to CORS)
+          console.log("Attempting direct fetch:", targetUrl);
+          res = await fetch(targetUrl);
+          if (!res.ok) {
+            const directErrorText = await res.text();
+            alert(`Failed to fetch deck: ${res.status} ${res.statusText}. Ensure the URL is correct and the deck is public. Details: ${directErrorText}`);
+            console.error(`Direct fetch failed: ${res.status} ${res.statusText}`, directErrorText);
+            return;
+          }
         }
       }
 
@@ -133,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("mulligan").disabled = false;
       drawHand();
     } catch (e) {
-      alert("Failed to fetch deck. Please check the URL, ensure the deck is public, or try again later.");
+      alert("Failed to fetch deck. Please check the URL, ensure the deck is public, or try again later. Error: " + e.message);
       console.error("Fetch error:", e.message, e);
     }
   });
