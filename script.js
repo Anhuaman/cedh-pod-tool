@@ -1,4 +1,4 @@
-function generatePod() {
+async function generatePod() {
   const input = document.getElementById("playerInput").value.trim().split("\n");
   let players = input.map(line => {
     const parts = line.split(" - ");
@@ -17,19 +17,32 @@ function generatePod() {
   shuffle(players);
 
   let output = "";
-  players.slice(0, 4).forEach((p, index) => {
-    const imgUrl = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(p.commander)}&format=image`;
+
+  for (let i = 0; i < 4; i++) {
+    const p = players[i];
+    const imageUrl = await fetchCommanderImage(p.commander);
+
     output += `
       <div class="card">
-        <img src="${imgUrl}" alt="${p.commander}">
-        <h3>Seat ${index + 1}: ${p.name}</h3>
+        <img src="${imageUrl}" alt="${p.commander}">
+        <h3>Seat ${i + 1}: ${p.name}</h3>
         <p><strong>Commander:</strong> ${p.commander}</p>
         <p><strong>Archetype:</strong> ${p.archetype}</p>
-        <p>${getSeatAdvice(index + 1, p.archetype)}</p>
+        <p>${getSeatAdvice(i + 1, p.archetype)}</p>
       </div>`;
-  });
+  }
 
   document.getElementById("output").innerHTML = output;
+}
+
+async function fetchCommanderImage(name) {
+  try {
+    const res = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(name)}`);
+    const data = await res.json();
+    return data.image_uris?.normal || data.card_faces?.[0]?.image_uris?.normal || "https://via.placeholder.com/488x680?text=Commander+Not+Found";
+  } catch (e) {
+    return "https://via.placeholder.com/488x680?text=Error+Fetching+Image";
+  }
 }
 
 function shuffle(arr) {
@@ -56,3 +69,4 @@ function getSeatAdvice(seat, archetype) {
 
   return `<em>${seatTips[seat]} ${tips[archetype] || tips["Unknown"]}</em>`;
 }
+
