@@ -21,7 +21,7 @@ function generatePod() {
     const imgUrl = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(p.commander)}&format=image`;
     output += `
       <div class="card">
-        <img src="${imgUrl}" alt="${p.commander}" style="width:100%; border-radius: 6px; margin-bottom: 10px;">
+        <img src="${imgUrl}" alt="${p.commander}">
         <h3>Seat ${index + 1}: ${p.name}</h3>
         <p><strong>Commander:</strong> ${p.commander}</p>
         <p><strong>Archetype:</strong> ${p.archetype}</p>
@@ -56,4 +56,3 @@ function getSeatAdvice(seat, archetype) {
 
   return `<em>${seatTips[seat]} ${tips[archetype] || tips["Unknown"]}</em>`;
 }
-
