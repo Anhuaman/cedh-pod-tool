@@ -71,3 +71,59 @@ button {
   margin-top: 0.5rem;
   color: #ccc;
 }
+#moxfield-section {
+  margin-top: 60px;
+  padding: 20px;
+  background: #111;
+  border-radius: 12px;
+  text-align: center;
+  color: #fff;
+}
+
+#moxfield-section h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+#moxfield-section input[type="text"] {
+  width: 60%;
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.mulligan-controls {
+  margin: 10px 0;
+}
+
+#moxfield-section button {
+  padding: 10px 16px;
+  font-size: 16px;
+  margin: 0 6px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#moxfield-section button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+#hand {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+#hand img {
+  height: 250px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(255,255,255,0.2);
+}
