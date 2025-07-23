@@ -26,8 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   container.appendChild(buttonWrapper);
 
   button.addEventListener("click", async () => {
-    const lines = input.value.trim().split("
-").filter(Boolean);
+    const lines = input.value.trim().split("\n").filter(Boolean);
     output.innerHTML = "";
 
     if (lines.length !== 4) {
