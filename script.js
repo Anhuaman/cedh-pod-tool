@@ -56,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Remove previous duplicated section (fix)
   // Moxfield + Mulligan Section
   const mulliganSection = document.createElement("section");
   mulliganSection.style.marginTop = "40px";
