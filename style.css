@@ -1,69 +1,66 @@
-/* style.css */
 body {
   background-color: #111;
-  color: #fff;
+  color: #eee;
   font-family: 'Inter', sans-serif;
-  padding: 2rem;
   text-align: center;
+  padding: 2rem;
 }
 
 h1 {
-  color: #f9a825;
   font-size: 2rem;
   margin-bottom: 1rem;
 }
 
 textarea {
   width: 100%;
-  max-width: 600px;
-  height: 150px;
-  margin-bottom: 1rem;
-  padding: 1rem;
+  max-width: 500px;
+  height: 120px;
+  padding: 0.5rem;
   font-size: 1rem;
+  margin-bottom: 1rem;
   border-radius: 8px;
   border: none;
-  resize: vertical;
 }
 
 button {
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   font-size: 1rem;
-  background-color: #1976d2;
-  color: white;
+  font-weight: bold;
+  border-radius: 8px;
   border: none;
-  border-radius: 6px;
+  background-color: #007bff;
+  color: white;
   cursor: pointer;
   margin-bottom: 2rem;
 }
 
-button:hover {
-  background-color: #1565c0;
-}
-
 #output {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  justify-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
 }
 
 .card {
-  background-color: #1c1c1c;
-  border-radius: 10px;
+  background-color: #222;
+  border-radius: 12px;
   padding: 1rem;
-  max-width: 300px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+  width: 300px;
+  box-shadow: 0 0 10px #000;
 }
 
 .card img {
-  width: 100%;
-  border-radius: 6px;
+  max-width: 100%;
+  border-radius: 8px;
   margin-bottom: 0.5rem;
+}
+
+.card h2 {
+  color: gold;
+  margin-top: 0.5rem;
 }
 
 .tip {
   font-style: italic;
-  color: #ccc;
-  font-size: 0.95rem;
+  margin-top: 0.5rem;
 }
-
