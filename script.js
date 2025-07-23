@@ -56,3 +56,4 @@ function getSeatAdvice(seat, archetype) {
 
   return `<em>${seatTips[seat]} ${tips[archetype] || tips["Unknown"]}</em>`;
 }
+
