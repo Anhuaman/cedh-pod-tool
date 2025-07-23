@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("loadDeck").addEventListener("click", async () => {
     const url = document.getElementById("deckUrl").value.trim();
-    const match = url.match(/moxfield.com\/decks\/([a-zA-Z0-9_-]+)/);
+    const match = url.match(/moxfield\.com\/decks\/([a-zA-Z0-9_-]+)/);
     if (!match) {
       alert("Invalid Moxfield URL. Please use a valid URL like https://www.moxfield.com/decks/DECK_ID");
       return;
@@ -92,19 +92,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const id = match[1];
     try {
-      const proxyUrl = "https://api.allorigins.win/raw?url=";
+      // Use a reliable CORS proxy
+      const proxyUrl = "https://corsproxy.io/?";
       const targetUrl = `https://api2.moxfield.com/v2/decks/${id}`;
-      const res = await fetch(`${proxyUrl}${encodeURIComponent(targetUrl)}`);
+      console.log("Fetching deck from:", `${proxyUrl}${encodeURIComponent(targetUrl)}`);
+      let res = await fetch(`${proxyUrl}${encodeURIComponent(targetUrl)}`);
 
       if (!res.ok) {
-        alert(`Failed to fetch deck: ${res.status} ${res.statusText}. Ensure the deck is public and the URL is correct.`);
-        console.error(`Fetch failed: ${res.status} ${res.statusText}`);
-        return;
+        const errorText = await res.text();
+        console.error(`Fetch failed with proxy: ${res.status} ${res.statusText}`, errorText);
+        // Fallback to direct fetch for debugging
+        console.log("Attempting direct fetch:", targetUrl);
+        res = await fetch(targetUrl);
+        if (!res.ok) {
+          const directErrorText = await res.text();
+          alert(`Failed to fetch deck: ${res.status} ${res.statusText}. Ensure the URL is correct and the deck is public. Details: ${directErrorText}`);
+          console.error(`Direct fetch failed: ${res.status} ${res.statusText}`, directErrorText);
+          return;
+        }
       }
 
       const data = await res.json();
+      console.log("API response:", data);
       if (!data.mainboard) {
-        alert("No mainboard data found. The deck may be empty or private.");
+        alert("No mainboard data found. The deck may be empty or inaccessible.");
         console.error("API response missing mainboard:", data);
         return;
       }
@@ -122,8 +133,8 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("mulligan").disabled = false;
       drawHand();
     } catch (e) {
-      alert("Failed to fetch deck. Please check the URL or try again later.");
-      console.error("Fetch error:", e);
+      alert("Failed to fetch deck. Please check the URL, ensure the deck is public, or try again later.");
+      console.error("Fetch error:", e.message, e);
     }
   });
 
