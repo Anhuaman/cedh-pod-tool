@@ -20,6 +20,7 @@ textarea {
   margin-bottom: 1rem;
   border-radius: 8px;
   border: none;
+  resize: vertical;
 }
 
 button {
@@ -34,22 +35,27 @@ button {
   margin-bottom: 2rem;
 }
 
-#output {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1.5rem;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, auto);
+  gap: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .card {
   background-color: #222;
   border-radius: 12px;
   padding: 1rem;
-  width: 300px;
   box-shadow: 0 0 10px #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
-.card img {
+.commander-img {
   max-width: 100%;
   border-radius: 8px;
   margin-bottom: 0.5rem;
@@ -57,10 +63,11 @@ button {
 
 .card h2 {
   color: gold;
-  margin-top: 0.5rem;
+  margin: 0.5rem 0;
 }
 
 .tip {
   font-style: italic;
   margin-top: 0.5rem;
+  color: #ccc;
 }
