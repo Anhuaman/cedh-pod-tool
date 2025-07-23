@@ -1,4 +1,3 @@
-/* General page style */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #111;
@@ -8,13 +7,11 @@ body {
   text-align: center;
 }
 
-/* Title style */
 h1 {
   color: #ffa500;
   padding: 20px 0;
 }
 
-/* Textarea style */
 textarea {
   width: 90%;
   height: 100px;
@@ -29,7 +26,6 @@ textarea {
   resize: vertical;
 }
 
-/* Button style */
 button {
   padding: 10px 20px;
   margin: 10px auto 30px;
@@ -46,7 +42,6 @@ button:hover {
   background-color: #0056b3;
 }
 
-/* Container for seat cards */
 #output {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -56,7 +51,6 @@ button:hover {
   margin: auto;
 }
 
-/* Seat card style */
 .card {
   background-color: #1c1c1c;
   border-radius: 12px;
@@ -74,13 +68,11 @@ button:hover {
   margin-bottom: 10px;
 }
 
-/* Seat title style */
 .card h3 {
   margin: 10px 0;
   font-size: 1.2rem;
 }
 
-/* Info style */
 .card p {
   font-size: 0.95rem;
   margin: 4px 0;
@@ -91,10 +83,10 @@ button:hover {
   font-style: italic;
 }
 
-/* Responsive layout for smaller screens */
 @media (max-width: 768px) {
   #output {
     grid-template-columns: 1fr;
   }
 }
+
 
