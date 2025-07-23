@@ -87,8 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const id = match[1];
     try {
-      const proxyUrl = "https://corsproxy.io/?";
-      const res = await fetch(`${proxyUrl}https://api2.moxfield.com/v2/decks/${id}`);
+      const proxyUrl = "https://api.allorigins.win/raw?url=";
+      const res = await fetch(`${proxyUrl}${encodeURIComponent(`https://api2.moxfield.com/v2/decks/${id}`)}`);
       const data = await res.json();
       const cards = data.mainboard;
       deck = [];
