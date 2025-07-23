@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>cEDH Pod Randomizer</title>
+  <title>cEDH Pod Randomizer + Mulligan Tips</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>cEDH Pod Randomizer + Mulligan Tips</h1>
 
-  <textarea id="playerInput" rows="8" placeholder="Enter players in format: Name - Commander - Archetype (e.g. Cris - Kraum - Turbo)"></textarea>
-  <button onclick="generatePod()">Randomize Pod</button>
-
-  <div id="output" class="table-grid"></div>
+  <textarea id="playerInput" placeholder="Enter player data like:&#10;Cris – Kraum, Ludevic's Opus – Turbo&#10;Brandon – Atraxa, Praetors' Voice – Midrange&#10;..."></textarea>
+  
+  <button onclick="randomizePod()">Randomize Pod</button>
+  
+  <div id="output"></div>
 
   <script src="script.js"></script>
 </body>
