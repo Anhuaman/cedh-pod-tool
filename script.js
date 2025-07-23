@@ -92,26 +92,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const id = match[1];
     try {
-      // Use a reliable CORS proxy with timeout
-      const proxyUrl = "https://api.codetabs.com/v1/proxy?quest=";
+      // Use cors-anywhere proxy (requires temporary access)
+      const proxyUrl = "https://cors-anywhere.herokuapp.com/";
       const targetUrl = `https://api2.moxfield.com/v2/decks/${id}`;
-      console.log("Fetching deck from:", `${proxyUrl}${encodeURIComponent(targetUrl)}`);
+      console.log("Fetching deck from:", `${proxyUrl}${targetUrl}`);
 
       // Add timeout to prevent hanging
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-      const res = await fetch(`${proxyUrl}${encodeURIComponent(targetUrl)}`, {
+      const res = await fetch(`${proxyUrl}${targetUrl}`, {
         signal: controller.signal,
         headers: {
           "Accept": "application/json",
-          "User-Agent": "cEDH-Pod-Randomizer/1.0"
+          "User-Agent": "cEDH-Pod-Randomizer/1.0",
+          // Optional: Add X-Requested-With for cors-anywhere
+          "X-Requested-With": "XMLHttpRequest"
         }
       });
       clearTimeout(timeoutId);
 
+      // Check Content-Type to ensure JSON response
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const errorText = await res.text();
+        alert(`Invalid response: Expected JSON but received ${contentType || "unknown"}. Details: ${errorText.slice(0, 100)}...`);
+        console.error(`Invalid response: Content-Type=${contentType}`, errorText);
+        return;
+      }
+
       if (!res.ok) {
         const errorText = await res.text();
-        alert(`Failed to fetch deck: ${res.status} ${res.statusText}. Ensure the URL is correct and the deck is public. Details: ${errorText}`);
+        alert(`Failed to fetch deck: ${res.status} ${res.statusText}. Ensure the URL is correct and the deck is public. Details: ${errorText.slice(0, 100)}...`);
         console.error(`Fetch failed: ${res.status} ${res.statusText}`, errorText);
         return;
       }
