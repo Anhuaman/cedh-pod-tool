@@ -1,47 +1,61 @@
-async function generatePod() {
+function generatePod() {
   const input = document.getElementById("playerInput").value.trim().split("\n");
   let players = input.map(line => {
-    const parts = line.split(" - ");
+    const parts = line.split(" – ");
+    const name = parts[0]?.trim();
+    const archetype = parts[2]?.trim() || "Unknown";
+    const commander = parts[1]?.trim();
+
     return {
-      name: parts[0]?.trim(),
-      commander: parts[1]?.trim() || "Unknown",
-      archetype: parts[2]?.trim() || "Unknown"
+      name,
+      commander,
+      archetype
     };
   });
 
   if (players.length < 4) {
-    alert("Enter at least 4 players with name, commander, and archetype.");
+    alert("Enter at least 4 players.");
     return;
   }
 
   shuffle(players);
 
-let output = "<div class='table-grid'>";
-players.slice(0, 4).forEach((p, i) => {
-  const seat = i + 1;
-  output += `
-    <div class="card">
-      <img src="https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(p.commander)}&format=image" alt="${p.commander}">
-      <h3>Seat ${seat}: ${p.name}</h3>
-      <p><strong>Commander:</strong> ${p.commander}</p>
+  const output = document.getElementById("output");
+  output.innerHTML = "";
+
+  players.slice(0, 4).forEach((p, index) => {
+    const cardName = encodeURIComponent(p.commander);
+    const imgURL = `https://api.scryfall.com/cards/named?exact=${cardName}`;
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const img = document.createElement("img");
+    img.src = `https://cards.scryfall.io/normal/front/0/0/00000000-0000-0000-0000-000000000000.jpg`; // default placeholder
+    img.alt = p.commander;
+
+    // Try to get actual image from Scryfall API
+    fetch(imgURL)
+      .then(res => res.json())
+      .then(data => {
+        if (data.image_uris && data.image_uris.normal) {
+          img.src = data.image_uris.normal;
+        }
+      });
+
+    const seat = index + 1;
+    const seatAdvice = getSeatAdvice(seat, p.archetype);
+
+    card.innerHTML = `
+      <div class="card-img">${img.outerHTML}</div>
+      <h3>Seat ${seat}: ${p.name} – ${p.commander}</h3>
+      <p><strong>Commander:</strong> ${p.commander || "Unknown"}</p>
       <p><strong>Archetype:</strong> ${p.archetype}</p>
-      <p><em>${getSeatAdvice(seat, p.archetype)}</em></p>
-    </div>
-  `;
-});
-output += "</div>";
+      <p><em>${seatAdvice}</em></p>
+    `;
 
-  document.getElementById("output").innerHTML = output;
-}
-
-async function fetchCommanderImage(name) {
-  try {
-    const res = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(name)}`);
-    const data = await res.json();
-    return data.image_uris?.normal || data.card_faces?.[0]?.image_uris?.normal || "https://via.placeholder.com/488x680?text=Commander+Not+Found";
-  } catch (e) {
-    return "https://via.placeholder.com/488x680?text=Error+Fetching+Image";
-  }
+    output.appendChild(card);
+  });
 }
 
 function shuffle(arr) {
@@ -52,20 +66,20 @@ function shuffle(arr) {
 }
 
 function getSeatAdvice(seat, archetype) {
-  let tips = {
+  const tips = {
     "Turbo": "Mull aggressively for fast mana and a win-con.",
     "Midrange": "Look for interaction and value engines.",
     "Stax": "Prioritize lock pieces and early plays.",
     "Unknown": "General advice: Keep a hand that does something by turn 2."
   };
 
-  let seatTips = {
+  const seatTips = {
     1: "You're going first – apply pressure and tempo.",
     2: "You're going second – balance between speed and interaction.",
     3: "You're going third – observe, then respond.",
     4: "You're going last – prioritize strong interaction and card advantage."
   };
 
-  return `<em>${seatTips[seat]} ${tips[archetype] || tips["Unknown"]}</em>`;
+  return `${seatTips[seat]} ${tips[archetype] || tips["Unknown"]}`;
 }
 
