@@ -1,8 +1,13 @@
 const fetchCardImage = async (name) => {
-  const query = encodeURIComponent(name);
-  const response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${query}`);
-  const data = await response.json();
-  return data.image_uris?.normal || data.card_faces?.[0]?.image_uris?.normal || "";
+  try {
+    const query = encodeURIComponent(name);
+    const response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${query}`);
+    const data = await response.json();
+    return data.image_uris?.normal || data.card_faces?.[0]?.image_uris?.normal || "https://via.placeholder.com/150?text=Card+Not+Found";
+  } catch (e) {
+    console.error(`Failed to fetch image for ${name}:`, e);
+    return "https://via.placeholder.com/150?text=Card+Not+Found";
+  }
 };
 
 const archetypeTips = {
@@ -17,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const output = document.getElementById("output");
   const container = document.getElementById("input-container");
 
+  // Center the randomize button
   const buttonWrapper = document.createElement("div");
   buttonWrapper.style.display = "flex";
   buttonWrapper.style.justifyContent = "center";
@@ -48,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const title = `<h2>Seat ${i + 1}: ${name}</h2>`;
       const cmd = `<p><strong>Commander:</strong> ${commanders.join(", ")}</p>`;
       const arch = `<p><strong>Archetype:</strong> ${archetype}</p>`;
-      const tip = `<p class="tip">You're going ${["first","second","third","last"][i]} – ${archetypeTips[archetype] || ""}</p>`;
+      const tip = `<p class="tip">You're going ${["first", "second", "third", "last"][i]} – ${archetypeTips[archetype] || "No specific mulligan tips."}</p>`;
       const imageHTML = images.map(img => `<img src="${img}" alt="commander image" class="commander-img">`).join("");
 
       card.innerHTML = `${imageHTML}${title}${cmd}${arch}${tip}`;
@@ -56,20 +62,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Remove previous duplicated section (fix)
-  // Moxfield + Mulligan Section
+  // Create mulligan section
   const mulliganSection = document.createElement("section");
-  mulliganSection.style.marginTop = "40px";
+  mulliganSection.id = "moxfield-section";
   mulliganSection.innerHTML = `
-    <h2 style="text-align:center;">Moxfield Mulligan Tester</h2>
+    <h2>Moxfield Mulligan Tester</h2>
     <div style="display: flex; justify-content: center; margin-bottom: 10px;">
-      <input type="text" id="deckUrl" placeholder="Paste Moxfield deck URL here" style="width: 60%; padding: 10px;" />
+      <input type="text" id="deckUrl" placeholder="Paste Moxfield deck URL here" />
     </div>
-    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
+    <div class="mulligan-controls">
       <button id="loadDeck" class="btn-blue">Load Deck</button>
-      <button id="mulligan" disabled>Mulligan</button>
+      <button id="mulligan" class="btn-blue" disabled>Mulligan</button>
     </div>
-    <div id="hand" style="display:flex; flex-wrap:wrap; justify-content:center;"></div>
+    <div id="hand"></div>
   `;
   document.body.appendChild(mulliganSection);
 
@@ -78,53 +83,74 @@ document.addEventListener("DOMContentLoaded", () => {
   let mulliganCount = 0;
 
   document.getElementById("loadDeck").addEventListener("click", async () => {
-  const url = document.getElementById("deckUrl").value.trim();
-  const match = url.match(/moxfield\.com\/decks\/([a-zA-Z0-9_\-]+)/);
-  if (!match) {
-    alert("Invalid Moxfield URL");
-    return;
-  }
-
-  const id = match[1];
-  try {
-    const proxyUrl = "https://api.allorigins.win/raw?url=";
-    const res = await fetch(`${proxyUrl}${encodeURIComponent(`https://api2.moxfield.com/v2/decks/${id}`)}`);
-    const data = await res.json();
-    const cards = data.mainboard;
-    deck = [];
-
-    for (const [_, info] of Object.entries(cards)) {
-      for (let i = 0; i < info.quantity; i++) {
-        deck.push(info.card.name);
-      }
+    const url = document.getElementById("deckUrl").value.trim();
+    const match = url.match(/moxfield.com\/decks\/([a-zA-Z0-9_-]+)/);
+    if (!match) {
+      alert("Invalid Moxfield URL. Please use a valid URL like https://www.moxfield.com/decks/DECK_ID");
+      return;
     }
 
-    mulliganCount = 0;
-    document.getElementById("mulligan").disabled = false;
-    drawHand();
-  } catch (e) {
-    alert("Failed to fetch deck. Please check the URL.");
-    console.error("Fetch error:", e); // helpful for debugging
-  }
-});
+    const id = match[1];
+    try {
+      const proxyUrl = "https://api.allorigins.win/raw?url=";
+      const targetUrl = `https://api2.moxfield.com/v2/decks/${id}`;
+      const res = await fetch(`${proxyUrl}${encodeURIComponent(targetUrl)}`);
+
+      if (!res.ok) {
+        alert(`Failed to fetch deck: ${res.status} ${res.statusText}. Ensure the deck is public and the URL is correct.`);
+        console.error(`Fetch failed: ${res.status} ${res.statusText}`);
+        return;
+      }
+
+      const data = await res.json();
+      if (!data.mainboard) {
+        alert("No mainboard data found. The deck may be empty or private.");
+        console.error("API response missing mainboard:", data);
+        return;
+      }
+
+      const cards = data.mainboard;
+      deck = [];
+
+      for (const [_, info] of Object.entries(cards)) {
+        for (let i = 0; i < info.quantity; i++) {
+          deck.push(info.card.name);
+        }
+      }
+
+      mulliganCount = 0; // Reset mulligan count
+      document.getElementById("mulligan").disabled = false;
+      drawHand();
+    } catch (e) {
+      alert("Failed to fetch deck. Please check the URL or try again later.");
+      console.error("Fetch error:", e);
+    }
+  });
 
   function drawHand() {
-    const handSize = Math.max(0, 7 - mulliganCount);
+    const handSize = Math.max(3, 7 - mulliganCount); // Minimum hand size of 3
     const shuffled = [...deck].sort(() => Math.random() - 0.5);
     currentHand = shuffled.slice(0, handSize);
     displayHand();
   }
 
-  function displayHand() {
+  async function displayHand() {
     const handDiv = document.getElementById("hand");
-    handDiv.innerHTML = "<h3 style='width:100%; text-align:center;'>Starting hand:</h3>";
-    currentHand.forEach(async (cardName) => {
+    handDiv.innerHTML = "<h3>Starting hand:</h3>";
+    const imagePromises = currentHand.map(async (cardName) => {
       const imgUrl = await fetchCardImage(cardName);
+      return { imgUrl, cardName };
+    });
+    const images = await Promise.all(imagePromises);
+    images.forEach(({ imgUrl, cardName }) => {
       const img = document.createElement("img");
       img.src = imgUrl;
       img.alt = cardName;
       img.className = "commander-img";
-      img.style.margin = "5px";
+      img.style.height = "250px"; // Match CSS #hand img
+      img.style.borderRadius = "8px";
+      img.style.boxShadow = "0 0 8px rgba(255,255,255,0.2)";
+      img.style.margin = "6px"; // Half of gap for consistent spacing
       handDiv.appendChild(img);
     });
   }
