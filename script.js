@@ -78,34 +78,35 @@ document.addEventListener("DOMContentLoaded", () => {
   let mulliganCount = 0;
 
   document.getElementById("loadDeck").addEventListener("click", async () => {
-    const url = document.getElementById("deckUrl").value.trim();
-    const match = url.match(/moxfield\.com\/decks\/([a-zA-Z0-9]+)/);
-    if (!match) {
-      alert("Invalid Moxfield URL");
-      return;
-    }
+  const url = document.getElementById("deckUrl").value.trim();
+  const match = url.match(/moxfield\.com\/decks\/([a-zA-Z0-9_\-]+)/);
+  if (!match) {
+    alert("Invalid Moxfield URL");
+    return;
+  }
 
-    const id = match[1];
-    try {
-      const proxyUrl = "https://api.allorigins.win/raw?url=";
-      const res = await fetch(`${proxyUrl}${encodeURIComponent(`https://www.moxfield.com/json/deck/${id}`)}`);
-      const data = await res.json();
-      const cards = data.mainboard;
-      deck = [];
+  const id = match[1];
+  try {
+    const proxyUrl = "https://api.allorigins.win/raw?url=";
+    const res = await fetch(`${proxyUrl}${encodeURIComponent(`https://api2.moxfield.com/v2/decks/${id}`)}`);
+    const data = await res.json();
+    const cards = data.mainboard;
+    deck = [];
 
-      for (const [_, info] of Object.entries(cards)) {
-        for (let i = 0; i < info.quantity; i++) {
-          deck.push(info.card.name);
-        }
+    for (const [_, info] of Object.entries(cards)) {
+      for (let i = 0; i < info.quantity; i++) {
+        deck.push(info.card.name);
       }
-
-      mulliganCount = 0;
-      document.getElementById("mulligan").disabled = false;
-      drawHand();
-    } catch (e) {
-      alert("Failed to fetch deck. Please check the URL.");
     }
-  });
+
+    mulliganCount = 0;
+    document.getElementById("mulligan").disabled = false;
+    drawHand();
+  } catch (e) {
+    alert("Failed to fetch deck. Please check the URL.");
+    console.error("Fetch error:", e); // helpful for debugging
+  }
+});
 
   function drawHand() {
     const handSize = Math.max(0, 7 - mulliganCount);
