@@ -11,37 +11,39 @@ const archetypeTips = {
   Stax: "Prioritize lock pieces and early plays."
 };
 
-document.getElementById("randomizeButton").addEventListener("click", async () => {
-  const input = document.getElementById("playerInput").value.trim();
-  const lines = input.split("\n").filter(Boolean);
-  const output = document.getElementById("output");
-  output.innerHTML = "";
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("randomizeButton").addEventListener("click", async () => {
+    const input = document.getElementById("playerInput").value.trim();
+    const lines = input.split("\n").filter(Boolean);
+    const output = document.getElementById("output");
+    output.innerHTML = "";
 
-  if (lines.length !== 4) {
-    alert("Please enter exactly 4 players.");
-    return;
-  }
+    if (lines.length !== 4) {
+      alert("Please enter exactly 4 players.");
+      return;
+    }
 
-  const shuffled = lines;
-  for (let i = 0; i < 4; i++) {
-    const [name, commanderRaw, archetype] = shuffled[i].split(" — ");
-    const commanders = commanderRaw.split("and").map(c => c.trim());
-    const images = await Promise.all(commanders.map(fetchCardImage));
+    const shuffled = lines;
+    for (let i = 0; i < 4; i++) {
+      const [name, commanderRaw, archetype] = shuffled[i].split(" — ");
+      if (!name || !commanderRaw || !archetype) continue;
 
-    const card = document.createElement("div");
-    card.className = `card seat-${i + 1}`;
+      const commanders = commanderRaw.split("and").map(c => c.trim());
+      const images = await Promise.all(commanders.map(fetchCardImage));
 
-    const title = `<h2>Seat ${i + 1}: ${name}</h2>`;
-    const cmd = `<p><strong>Commander:</strong> ${commanders.join(", ")}</p>`;
-    const arch = `<p><strong>Archetype:</strong> ${archetype}</p>`;
-    const tip = `<p class="tip">You're going ${["first","second","third","last"][i]} – ${archetypeTips[archetype] || ""}</p>`;
-    const imageHTML = images.map(img => `<img src="${img}" alt="${img}" class="commander-img">`).join("");
+      const card = document.createElement("div");
+      card.className = `card seat-${i + 1}`;
 
-    card.innerHTML = `${imageHTML}${title}${cmd}${arch}${tip}`;
-    output.appendChild(card);
-  }
+      const title = `<h2>Seat ${i + 1}: ${name}</h2>`;
+      const cmd = `<p><strong>Commander:</strong> ${commanders.join(", ")}</p>`;
+      const arch = `<p><strong>Archetype:</strong> ${archetype}</p>`;
+      const tip = `<p class="tip">You're going ${["first","second","third","last"][i]} – ${archetypeTips[archetype] || ""}</p>`;
+      const imageHTML = images.map(img => `<img src="${img}" alt="commander image" class="commander-img">`).join("");
+
+      card.innerHTML = `${imageHTML}${title}${cmd}${arch}${tip}`;
+      output.appendChild(card);
+    }
+  });
 });
 
-  }
-});
 
