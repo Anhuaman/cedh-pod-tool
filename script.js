@@ -1,22 +1,14 @@
-const correctionMap = {
-  "Thalia, Guardian": "Thalia, Guardian of Thraben",
-  "Atraxa": "Atraxa, Praetors' Voice",
-  "Kraum": "Kraum, Ludevic's Opus"
-};
-
 const fetchCardImage = async (name) => {
-  const corrected = correctionMap[name] || name;
-  const query = encodeURIComponent(corrected);
-  const res = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${query}`);
-  const data = await res.json();
+  const query = encodeURIComponent(name);
+  const response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${query}`);
+  const data = await response.json();
   return data.image_uris?.normal || data.card_faces?.[0]?.image_uris?.normal || "";
 };
 
 const archetypeTips = {
   Turbo: "Mull aggressively for fast mana and a win-con.",
   Midrange: "Look for interaction and value engines.",
-  Stax: "Prioritize lock pieces and early plays.",
-  Guardian: "Apply pressure and tempo.",
+  Stax: "Prioritize lock pieces and early plays."
 };
 
 document.getElementById("randomizeButton").addEventListener("click", async () => {
@@ -25,29 +17,31 @@ document.getElementById("randomizeButton").addEventListener("click", async () =>
   const output = document.getElementById("output");
   output.innerHTML = "";
 
-  const shuffled = lines.sort(() => Math.random() - 0.5);
+  if (lines.length !== 4) {
+    alert("Please enter exactly 4 players.");
+    return;
+  }
 
-  for (let i = 0; i < shuffled.length; i++) {
+  const shuffled = lines;
+  for (let i = 0; i < 4; i++) {
     const [name, commanderRaw, archetype] = shuffled[i].split(" — ");
-    const commanders = commanderRaw.split(",").map(c => c.trim());
+    const commanders = commanderRaw.split("and").map(c => c.trim());
     const images = await Promise.all(commanders.map(fetchCardImage));
 
     const card = document.createElement("div");
-    card.className = "card";
+    card.className = `card seat-${i + 1}`;
 
-    const commanderList = commanders.join(", ");
-    const seatNumber = i + 1;
-    const turnOrder = ["first", "second", "third", "last"][i];
+    const title = `<h2>Seat ${i + 1}: ${name}</h2>`;
+    const cmd = `<p><strong>Commander:</strong> ${commanders.join(", ")}</p>`;
+    const arch = `<p><strong>Archetype:</strong> ${archetype}</p>`;
+    const tip = `<p class="tip">You're going ${["first","second","third","last"][i]} – ${archetypeTips[archetype] || ""}</p>`;
+    const imageHTML = images.map(img => `<img src="${img}" alt="${img}" class="commander-img">`).join("");
 
-    card.innerHTML = `
-      ${images.map(img => `<img src="${img}" alt="${commanderList}">`).join("")}
-      <h2>Seat ${seatNumber}: ${name}</h2>
-      <p><strong>Commander:</strong> ${commanderList}</p>
-      <p><strong>Archetype:</strong> ${archetype}</p>
-      <p class="tip">You're going ${turnOrder} – ${archetypeTips[archetype] || ""}</p>
-    `;
-
+    card.innerHTML = `${imageHTML}${title}${cmd}${arch}${tip}`;
     output.appendChild(card);
+  }
+});
+
   }
 });
 
