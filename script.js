@@ -3,13 +3,14 @@ function generatePod() {
   let players = input.map(line => {
     const parts = line.split(" - ");
     return {
-      name: parts[0].trim(),
-      archetype: parts[1]?.trim() || "Unknown"
+      name: parts[0]?.trim(),
+      commander: parts[1]?.trim() || "Unknown",
+      archetype: parts[2]?.trim() || "Unknown"
     };
   });
 
   if (players.length < 4) {
-    alert("Enter at least 4 players.");
+    alert("Enter at least 4 players with name, commander, and archetype.");
     return;
   }
 
@@ -17,9 +18,12 @@ function generatePod() {
 
   let output = "";
   players.slice(0, 4).forEach((p, index) => {
+    const imgUrl = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(p.commander)}&format=image`;
     output += `
       <div class="card">
+        <img src="${imgUrl}" alt="${p.commander}" style="width:100%; border-radius: 6px; margin-bottom: 10px;">
         <h3>Seat ${index + 1}: ${p.name}</h3>
+        <p><strong>Commander:</strong> ${p.commander}</p>
         <p><strong>Archetype:</strong> ${p.archetype}</p>
         <p>${getSeatAdvice(index + 1, p.archetype)}</p>
       </div>`;
