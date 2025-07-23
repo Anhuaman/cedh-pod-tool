@@ -1,65 +1,66 @@
-// Get references to DOM elements
-const input = document.getElementById("playerInput");
-const randomizeBtn = document.getElementById("randomizeBtn");
-const outputDiv = document.getElementById("output");
+document.getElementById('randomizeBtn').addEventListener('click', () => {
+  const input = document.getElementById('input').value.trim();
+  if (!input) return;
 
-// Get Scryfall image URL
-function getScryfallImage(commanderName) {
-  const encodedName = encodeURIComponent(commanderName);
-  return `https://api.scryfall.com/cards/named?exact=${encodedName}`;
-}
+  const lines = input.split('\n').filter(Boolean);
+  const shuffled = lines.sort(() => 0.5 - Math.random());
 
-// Parse one line of input
-function parsePlayerLine(line) {
-  const parts = line.split("–").map(p => p.trim());
-  if (parts.length !== 3) return null;
-  const player = parts[0];
-  const archetype = parts[2];
-  const commanderText = parts[1];
-  const commanderNames = commanderText.split(/,\s*/); // support partners
-  return {
-    player,
-    commanders: commanderNames,
-    archetype
-  };
-}
-
-// Tips by seat
-function getMulliganTip(seat, archetype) {
-  const tips = [
-    `You're going first – apply pressure and tempo. ${archetype.includes("Turbo") ? "Mull aggressively for fast mana and a win-con." : "Look for interaction and value engines."}`,
-    `You're going second – balance between speed and interaction. ${archetype.includes("Turbo") ? "Mull aggressively for fast mana and a win-con." : "Look for interaction and value engines."}`,
-    `You're going third – observe, then respond. ${archetype.includes("Turbo") ? "Mull aggressively for fast mana and a win-con." : "Look for interaction and value engines."}`,
-    `You're going last – prioritize strong interaction and card advantage. ${archetype.includes("Turbo") ? "Mull aggressively for fast mana and a win-con." : "Prioritize lock pieces and early plays."}`
+  const seatOrder = ['first', 'second', 'third', 'last'];
+  const seatTips = [
+    'apply pressure and tempo',
+    'balance between speed and interaction',
+    'observe, then respond',
+    'prioritize strong interaction and card advantage'
   ];
-  return tips[seat - 1];
-}
 
-// Render a single player
-function createCommanderHTML(player, seat) {
-  const commanderImages = player.commanders.map(name => {
-    return `<img src="https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}" alt="${name}" class="commander-image" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg'">`;
-  }).join('');
+  const results = document.getElementById('results');
+  results.innerHTML = '';
 
-  return `
-    <div class="card">
-      <div class="commander-images">${commanderImages}</div>
-      <h3>Seat ${seat}: ${player.player}</h3>
-      <p><strong>Commander:</strong> ${player.commanders.join(", ")}</p>
-      <p><strong>Archetype:</strong> ${player.archetype}</p>
-      <p class="tip"><em>${getMulliganTip(seat, player.archetype)}</em></p>
-    </div>
-  `;
-}
+  shuffled.forEach((line, i) => {
+    const match = line.match(/^(.+?)\s+—\s+(.+?)\s+—\s+(Turbo|Midrange|Stax)/i);
+    if (!match) return;
 
-// Main randomize function
-function randomizePod() {
-  const lines = input.value.trim().split("\n").filter(line => line.trim() !== "");
-  const players = lines.map(parsePlayerLine).filter(p => p !== null);
-  const shuffled = players.sort(() => Math.random() - 0.5);
-  outputDiv.innerHTML = shuffled.map((p, i) => createCommanderHTML(p, i + 1)).join('');
-}
+    const [_, name, commanderRaw, archetype] = match;
+    const seatNum = i + 1;
+    const seat = seatOrder[i] || 'later';
+    const tip = seatTips[i] || 'be flexible';
 
-// Event listener
-randomizeBtn.addEventListener("click", randomizePod);
+    const commanderNames = commanderRaw.split(/,\s*/);
+    const imgQuery = commanderNames.length > 1
+      ? commanderNames.map(c => `[[${c}]]`).join(' ') // Partner handling
+      : commanderRaw;
 
+    const cardImageURL = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(commanderRaw)}`;
+
+    fetch(cardImageURL)
+      .then(res => res.json())
+      .then(data => {
+        const img = document.createElement('img');
+        img.src = data.image_uris?.normal || '';
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          ${img.outerHTML}
+          <h2>Seat ${seatNum}: ${name}</h2>
+          <p><strong>Commander:</strong> ${commanderRaw}</p>
+          <p><strong>Archetype:</strong> ${archetype}</p>
+          <p><em>You’re going ${seat} – ${tip}.<br />
+          General advice: Keep a hand that does something by turn 2.</em></p>
+        `;
+        results.appendChild(card);
+      })
+      .catch(() => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h2>Seat ${seatNum}: ${name}</h2>
+          <p><strong>Commander:</strong> ${commanderRaw}</p>
+          <p><strong>Archetype:</strong> ${archetype}</p>
+          <p><em>You’re going ${seat} – ${tip}.<br />
+          General advice: Keep a hand that does something by turn 2.</em></p>
+        `;
+        results.appendChild(card);
+      });
+  });
+});
