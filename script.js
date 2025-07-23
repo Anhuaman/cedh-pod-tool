@@ -93,18 +93,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const id = match[1];
     try {
       // Primary proxy with timeout
-      const primaryProxyUrl = "https://cors-anywhere.herokuapp.com/";
+      const proxyUrl = "https://crossorigin.me/";
       const targetUrl = `https://api2.moxfield.com/v2/decks/${id}`;
-      console.log("Fetching deck from primary proxy:", `${primaryProxyUrl}${targetUrl}`);
+      console.log("Fetching deck from:", `${proxyUrl}${targetUrl}`);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-      const res = await fetch(`${primaryProxyUrl}${targetUrl}`, {
+      const res = await fetch(`${proxyUrl}${targetUrl}`, {
         signal: controller.signal,
         headers: {
           "Accept": "application/json",
-          "User-Agent": "cEDH-Pod-Randomizer/1.0",
-          "X-Requested-With": "XMLHttpRequest"
+          "User-Agent": "cEDH-Pod-Randomizer/1.0"
         }
       });
       clearTimeout(timeoutId);
@@ -114,29 +113,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!contentType || !contentType.includes("application/json")) {
         const errorText = await res.text();
         console.error(`Invalid response: Content-Type=${contentType}`, errorText);
-        alert(`Invalid response: Expected JSON but received ${contentType || "unknown"}. Details: ${errorText.slice(0, 100)}...`);
-        // Fallback to alternative proxy
-        const fallbackProxyUrl = "https://api.allorigins.win/raw?url=";
-        console.log("Falling back to:", `${fallbackProxyUrl}${encodeURIComponent(targetUrl)}`);
-        const fallbackRes = await fetch(`${fallbackProxyUrl}${encodeURIComponent(targetUrl)}`, {
-          signal: controller.signal,
-          headers: {
-            "Accept": "application/json",
-            "User-Agent": "cEDH-Pod-Randomizer/1.0"
-          }
-        });
-        if (!fallbackRes.ok || !fallbackRes.headers.get("content-type")?.includes("application/json")) {
-          const fallbackErrorText = await fallbackRes.text();
-          console.error(`Fallback failed: ${fallbackRes.status} ${fallbackRes.statusText}`, fallbackErrorText);
-          alert(`Fallback failed: ${fallbackRes.status} ${fallbackRes.statusText}. Details: ${fallbackErrorText.slice(0, 100)}...`);
-          return;
-        }
-        res = fallbackRes;
+        alert(`Invalid response: Expected JSON but received ${contentType || "unknown"}. Details: ${errorText.slice(0, 200)}...`);
+        return;
       }
 
       if (!res.ok) {
         const errorText = await res.text();
-        alert(`Failed to fetch deck: ${res.status} ${res.statusText}. Ensure the URL is correct and the deck is public. Details: ${errorText.slice(0, 100)}...`);
+        alert(`Failed to fetch deck: ${res.status} ${res.statusText}. Ensure the URL is correct and the deck is public. Details: ${errorText.slice(0, 200)}...`);
         console.error(`Fetch failed: ${res.status} ${res.statusText}`, errorText);
         return;
       }
