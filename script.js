@@ -16,21 +16,20 @@ async function generatePod() {
 
   shuffle(players);
 
-  let output = "";
-
-  for (let i = 0; i < 4; i++) {
-    const p = players[i];
-    const imageUrl = await fetchCommanderImage(p.commander);
-
-    output += `
-      <div class="card">
-        <img src="${imageUrl}" alt="${p.commander}">
-        <h3>Seat ${i + 1}: ${p.name}</h3>
-        <p><strong>Commander:</strong> ${p.commander}</p>
-        <p><strong>Archetype:</strong> ${p.archetype}</p>
-        <p>${getSeatAdvice(i + 1, p.archetype)}</p>
-      </div>`;
-  }
+let output = "<div class='table-grid'>";
+players.slice(0, 4).forEach((p, i) => {
+  const seat = i + 1;
+  output += `
+    <div class="card">
+      <img src="https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(p.commander)}&format=image" alt="${p.commander}">
+      <h3>Seat ${seat}: ${p.name}</h3>
+      <p><strong>Commander:</strong> ${p.commander}</p>
+      <p><strong>Archetype:</strong> ${p.archetype}</p>
+      <p><em>${getSeatAdvice(seat, p.archetype)}</em></p>
+    </div>
+  `;
+});
+output += "</div>";
 
   document.getElementById("output").innerHTML = output;
 }
