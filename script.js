@@ -25,7 +25,19 @@ function generatePod() {
 
   players.slice(0, 4).forEach((p, index) => {
     const cardName = encodeURIComponent(p.commander);
-    const imgURL = `https://api.scryfall.com/cards/named?exact=${cardName}`;
+    const imgURL = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(p.commander)}`;
+
+fetch(imgURL)
+  .then(res => res.ok ? res.json() : Promise.reject('Commander not found'))
+  .then(data => {
+    if (data.image_uris && data.image_uris.normal) {
+      img.src = data.image_uris.normal;
+    }
+  })
+  .catch(err => {
+    console.error(`Error fetching image for ${p.commander}:`, err);
+  });
+
 
     const card = document.createElement("div");
     card.className = "card";
