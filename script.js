@@ -17,7 +17,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const output = document.getElementById("output");
   const container = document.getElementById("input-container");
 
-  container.appendChild(button); // Move button below the input
+  // Move button below input and center it
+  const buttonWrapper = document.createElement("div");
+  buttonWrapper.style.display = "flex";
+  buttonWrapper.style.justifyContent = "center";
+  buttonWrapper.style.marginTop = "10px";
+  buttonWrapper.appendChild(button);
+  container.appendChild(buttonWrapper);
 
   button.addEventListener("click", async () => {
     const lines = input.value.trim().split("\n").filter(Boolean);
@@ -49,5 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
 
 
