@@ -2,15 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>cEDH Pod Randomizer</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <h1>cEDH Pod Randomizer + Mulligan Tips</h1>
-  <textarea id="input" rows="6" placeholder="Format: Name — Commander — Archetype\nOne per line"></textarea>
-  <button id="randomizeBtn">Randomize Pod</button>
-  <div id="results" class="grid"></div>
+  <textarea id="input" rows="6" cols="50">Alex — Rograkh, Son of Rohgahh, Silas Renn, Seeker Adept — Turbo
+Sam — Winota, Joiner of Forces — Stax
+Mia — Kinnan, Bonder Prodigy — Turbo
+Leo — Tivit, Seller of Secrets — Midrange</textarea>
+  <br />
+  <button onclick="randomizePod()">Randomize Pod</button>
+  <div id="output" class="pod-output"></div>
   <script src="script.js"></script>
 </body>
 </html>
