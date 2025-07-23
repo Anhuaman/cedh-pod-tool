@@ -92,20 +92,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const id = match[1];
     try {
-      // Use cors-anywhere proxy (requires temporary access)
-      const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+      // Primary proxy with timeout
+      const primaryProxyUrl = "https://cors-anywhere.herokuapp.com/";
       const targetUrl = `https://api2.moxfield.com/v2/decks/${id}`;
-      console.log("Fetching deck from:", `${proxyUrl}${targetUrl}`);
+      console.log("Fetching deck from primary proxy:", `${primaryProxyUrl}${targetUrl}`);
 
-      // Add timeout to prevent hanging
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-      const res = await fetch(`${proxyUrl}${targetUrl}`, {
+      const res = await fetch(`${primaryProxyUrl}${targetUrl}`, {
         signal: controller.signal,
         headers: {
           "Accept": "application/json",
           "User-Agent": "cEDH-Pod-Randomizer/1.0",
-          // Optional: Add X-Requested-With for cors-anywhere
           "X-Requested-With": "XMLHttpRequest"
         }
       });
@@ -115,9 +113,25 @@ document.addEventListener("DOMContentLoaded", () => {
       const contentType = res.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         const errorText = await res.text();
-        alert(`Invalid response: Expected JSON but received ${contentType || "unknown"}. Details: ${errorText.slice(0, 100)}...`);
         console.error(`Invalid response: Content-Type=${contentType}`, errorText);
-        return;
+        alert(`Invalid response: Expected JSON but received ${contentType || "unknown"}. Details: ${errorText.slice(0, 100)}...`);
+        // Fallback to alternative proxy
+        const fallbackProxyUrl = "https://api.allorigins.win/raw?url=";
+        console.log("Falling back to:", `${fallbackProxyUrl}${encodeURIComponent(targetUrl)}`);
+        const fallbackRes = await fetch(`${fallbackProxyUrl}${encodeURIComponent(targetUrl)}`, {
+          signal: controller.signal,
+          headers: {
+            "Accept": "application/json",
+            "User-Agent": "cEDH-Pod-Randomizer/1.0"
+          }
+        });
+        if (!fallbackRes.ok || !fallbackRes.headers.get("content-type")?.includes("application/json")) {
+          const fallbackErrorText = await fallbackRes.text();
+          console.error(`Fallback failed: ${fallbackRes.status} ${fallbackRes.statusText}`, fallbackErrorText);
+          alert(`Fallback failed: ${fallbackRes.status} ${fallbackRes.statusText}. Details: ${fallbackErrorText.slice(0, 100)}...`);
+          return;
+        }
+        res = fallbackRes;
       }
 
       if (!res.ok) {
