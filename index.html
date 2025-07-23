@@ -1,20 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>cEDH Pod Randomizer + Mulligan Tips</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <h1>cEDH Pod Randomizer + Mulligan Tips</h1>
-<div id="input-container">
-  <textarea id="playerInput" placeholder="Enter player info,\ne.g.:\nCris — Tymna the Weaver and Kraum, Ludevic's Opus — Turbo\nBrandon — Atraxa, Praetors' Voice — Midrange"></textarea>
-  <button id="randomizeButton">Randomize Pod</button>
-</div>
+
+  <div id="input-container">
+    <textarea
+      id="playerInput"
+      placeholder="Enter player info,
+e.g.:
+Cris — Tymna the Weaver and Kraum, Ludevic's Opus — Turbo
+Brandon — Atraxa, Praetors' Voice — Midrange
+Jhony — Thalia, Guardian of Thraben — Stax
+Leo — Winota, Joiner of Forces — Stax"></textarea>
+    <button id="randomizeButton">Randomize Pod</button>
+  </div>
+
   <div id="output" class="grid"></div>
 
- <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
