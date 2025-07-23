@@ -11,6 +11,13 @@ const archetypeTips = {
   Stax: "Prioritize lock pieces and early plays."
 };
 
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const button = document.getElementById("randomizeButton");
   const input = document.getElementById("playerInput");
@@ -34,6 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    shuffle(lines); // ✅ Randomize player order here
+
     for (let i = 0; i < 4; i++) {
       const [name, commanderRaw, archetype] = lines[i].split(" — ");
       if (!name || !commanderRaw || !archetype) continue;
@@ -47,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const title = `<h2>Seat ${i + 1}: ${name}</h2>`;
       const cmd = `<p><strong>Commander:</strong> ${commanders.join(", ")}</p>`;
       const arch = `<p><strong>Archetype:</strong> ${archetype}</p>`;
-      const tip = `<p class="tip">You're going ${["first","second","third","last"][i]} – ${archetypeTips[archetype] || ""}</p>`;
+      const tip = `<p class="tip">You're going ${["first", "second", "third", "last"][i]} – ${archetypeTips[archetype] || ""}</p>`;
       const imageHTML = images.map(img => `<img src="${img}" alt="commander image" class="commander-img">`).join("");
 
       card.innerHTML = `${imageHTML}${title}${cmd}${arch}${tip}`;
@@ -55,6 +64,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-
-
