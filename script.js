@@ -15,11 +15,16 @@ function generatePod() {
 
   shuffle(players);
 
-  let output = "<h2>Randomized Pod:</h2><ol>";
+  let output = "";
   players.slice(0, 4).forEach((p, index) => {
-    output += `<li><strong>${p.name}</strong> - ${p.archetype} <br> ${getSeatAdvice(index + 1, p.archetype)}</li>`;
+    output += `
+      <div class="card">
+        <h3>Seat ${index + 1}: ${p.name}</h3>
+        <p><strong>Archetype:</strong> ${p.archetype}</p>
+        <p>${getSeatAdvice(index + 1, p.archetype)}</p>
+      </div>`;
   });
-  output += "</ol>";
+
   document.getElementById("output").innerHTML = output;
 }
 
