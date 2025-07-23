@@ -1,66 +1,49 @@
-document.getElementById('randomizeBtn').addEventListener('click', () => {
+async function fetchCardImage(commanderName) {
+  const apiUrl = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(commanderName)}`;
+  try {
+    const response = await fetch(apiUrl);
+    if (!response.ok) throw new Error();
+    const data = await response.json();
+    return data.image_uris?.normal || data.card_faces?.[0]?.image_uris?.normal || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+async function randomizePod() {
   const input = document.getElementById('input').value.trim();
-  if (!input) return;
-
   const lines = input.split('\n').filter(Boolean);
-  const shuffled = lines.sort(() => 0.5 - Math.random());
+  const seats = lines.sort(() => 0.5 - Math.random()).slice(0, 4);
 
-  const seatOrder = ['first', 'second', 'third', 'last'];
-  const seatTips = [
-    'apply pressure and tempo',
-    'balance between speed and interaction',
-    'observe, then respond',
-    'prioritize strong interaction and card advantage'
-  ];
+  const seatHtml = await Promise.all(seats.map(async (line, index) => {
+    const [player, commanderStr, archetype] = line.split(/\s+—\s+/);
+    const commanders = commanderStr.split(',').map(s => s.trim());
+    const imageUrls = await Promise.all(commanders.map(fetchCardImage));
+    const seatNum = index + 1;
 
-  const results = document.getElementById('results');
-  results.innerHTML = '';
+    const advice = [
+      "You're going first – apply pressure and tempo.",
+      "You're going second – balance between speed and interaction.",
+      "You're going third – observe, then respond.",
+      "You're going last – prioritize strong interaction and card advantage."
+    ][index];
 
-  shuffled.forEach((line, i) => {
-    const match = line.match(/^(.+?)\s+—\s+(.+?)\s+—\s+(Turbo|Midrange|Stax)/i);
-    if (!match) return;
+    const archetypeAdvice = {
+      Turbo: "Mull aggressively for fast mana and a win-con.",
+      Midrange: "Look for interaction and value engines.",
+      Stax: "Prioritize lock pieces and early plays."
+    };
 
-    const [_, name, commanderRaw, archetype] = match;
-    const seatNum = i + 1;
-    const seat = seatOrder[i] || 'later';
-    const tip = seatTips[i] || 'be flexible';
+    return `
+      <div class="card">
+        ${imageUrls.map(url => `<img src="${url}" alt="${commanderStr}"/>`).join('')}
+        <b>Seat ${seatNum}: ${player}</b>
+        <b>Commander:</b> ${commanderStr}<br>
+        <b>Archetype:</b> ${archetype}<br>
+        <em>${advice} ${archetypeAdvice[archetype] || ''}</em>
+      </div>
+    `;
+  }));
 
-    const commanderNames = commanderRaw.split(/,\s*/);
-    const imgQuery = commanderNames.length > 1
-      ? commanderNames.map(c => `[[${c}]]`).join(' ') // Partner handling
-      : commanderRaw;
-
-    const cardImageURL = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(commanderRaw)}`;
-
-    fetch(cardImageURL)
-      .then(res => res.json())
-      .then(data => {
-        const img = document.createElement('img');
-        img.src = data.image_uris?.normal || '';
-
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          ${img.outerHTML}
-          <h2>Seat ${seatNum}: ${name}</h2>
-          <p><strong>Commander:</strong> ${commanderRaw}</p>
-          <p><strong>Archetype:</strong> ${archetype}</p>
-          <p><em>You’re going ${seat} – ${tip}.<br />
-          General advice: Keep a hand that does something by turn 2.</em></p>
-        `;
-        results.appendChild(card);
-      })
-      .catch(() => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <h2>Seat ${seatNum}: ${name}</h2>
-          <p><strong>Commander:</strong> ${commanderRaw}</p>
-          <p><strong>Archetype:</strong> ${archetype}</p>
-          <p><em>You’re going ${seat} – ${tip}.<br />
-          General advice: Keep a hand that does something by turn 2.</em></p>
-        `;
-        results.appendChild(card);
-      });
-  });
-});
+  document.getElementById('output').innerHTML = seatHtml.join('');
+}
