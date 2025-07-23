@@ -1,87 +1,69 @@
+/* style.css */
 body {
-  margin: 0;
+  background-color: #111;
+  color: #fff;
   font-family: 'Inter', sans-serif;
-  background-color: #121212;
-  color: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   padding: 2rem;
+  text-align: center;
 }
 
 h1 {
-  color: #fbbf24;
+  color: #f9a825;
   font-size: 2rem;
   margin-bottom: 1rem;
 }
 
 textarea {
   width: 100%;
-  max-width: 700px;
-  height: 120px;
-  padding: 0.75rem;
+  max-width: 600px;
+  height: 150px;
+  margin-bottom: 1rem;
+  padding: 1rem;
   font-size: 1rem;
   border-radius: 8px;
   border: none;
   resize: vertical;
-  margin-bottom: 1rem;
-  font-family: monospace;
 }
 
 button {
-  background-color: #2563eb;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background-color: #1976d2;
   color: white;
   border: none;
-  padding: 0.75rem 1.25rem;
-  font-size: 1rem;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s;
   margin-bottom: 2rem;
 }
 
 button:hover {
-  background-color: #1d4ed8;
+  background-color: #1565c0;
 }
 
 #output {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-  width: 100%;
-  max-width: 1200px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  justify-items: center;
 }
 
-.player-card {
-  background-color: #1e1e1e;
-  border-radius: 12px;
+.card {
+  background-color: #1c1c1c;
+  border-radius: 10px;
   padding: 1rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-  text-align: center;
+  max-width: 300px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.6);
 }
 
-.player-card img {
-  width: 223px;
-  height: 310px;
+.card img {
+  width: 100%;
   border-radius: 6px;
-  object-fit: cover;
-  margin-bottom: 1rem;
-}
-
-.player-card h2 {
-  font-size: 1.25rem;
-  color: #facc15;
+  margin-bottom: 0.5rem;
 }
 
 .tip {
   font-style: italic;
-  font-size: 0.9rem;
-  margin-top: 0.75rem;
+  color: #ccc;
+  font-size: 0.95rem;
 }
 
-.image-container {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
